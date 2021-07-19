@@ -103,7 +103,9 @@
                 <p class="text-center mb-3">
                     <img src={% static "./images/misc/payments.png" %} height="26">
                 </p>
-                <a href="{% url 'checkout' %}" class="btn btn-primary btn-block"> Checkout </a>
+                <div id="paypal-button-container">
+                  <!-- paypal button will load-->
+                </div>
             </div> <!-- card-body.// -->
             </div> <!-- card.// -->
     
@@ -115,5 +117,73 @@
     
     </div> <!-- container .//  -->
     </section>
+    <script>
+      // Render the PayPal button into #paypal-button-container
+      function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+    var amount = "{{ grand_total }}"
+    var url = "{% url 'payments' %}"
+    const csrftoken = getCookie('csrftoken');
+    var orderID="{{ order.order_number }}"
+    var payment_method='PayPal'
+    var redirect_url="{% url 'order_complete' %}"
+      paypal.Buttons({
+        
+        style: {
+                color:  'blue',
+                shape:  'rect',
+                label:  'pay',
+                height: 40
+            },
 
+          // Set up the transaction
+          createOrder: function(data, actions) {
+              return actions.order.create({
+                  purchase_units: [{
+                      amount: {
+                          value: amount,
+                      }
+                  }]
+              });
+          },
+
+          // Finalize the transaction
+          onApprove: function(data, actions) {
+              return actions.order.capture().then(function(details) {
+                  // Show a success message to the buyer
+                  senddata();
+                  function senddata(){
+                    fetch(url,{
+                      method:'POST',
+                      headers:{
+                        'Content_type':'application/json',
+                        'X-CSRFToken':csrftoken,},
+                        body:JSON.stringify({
+                          orderid:orderID,
+                          transID:details.id,
+                          payment_method:payment_method,
+                          status: details.status
+                        }),
+                      
+                    }).then(function(response){return response.json()}).then(function(data){ window.location.href=redirect_url+'?order_number='+data.order_number + '&payment_id='+data.payment;})
+                  }
+              });
+          }
+
+
+      }).render('#paypal-button-container');
+  </script>
 {% endblock %}
