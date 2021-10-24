@@ -33,7 +33,7 @@ def register(request):
             user.save()
             # User Profile Creation
             profile = UserProfile()
-            profile.user_id = user.id()
+            profile.user_id = user.id
             profile.profile_picture = 'default/default-user.png'
             profile.save()
             # User Activation
