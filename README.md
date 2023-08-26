@@ -87,9 +87,6 @@ python manage.py runserver
 
 Contributions are welcome! If you find any issues or have suggestions, feel free to open a pull request.
 
-## License
-
-This project is licensed under the [Your License] License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
